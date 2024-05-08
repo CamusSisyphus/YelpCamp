@@ -1,4 +1,5 @@
 <% layout('layouts/boilerplate')%>
+<div id="map" style="width: 100%; height: 500px"></div>
     <h1>All Campgrounds</h1>
     <div>
         <a href="campgrounds/new">
@@ -9,8 +10,13 @@
         <% for (let campground of campgrounds){ %>
         <div class="card mb-3">
             <div class="row">
-                <di class="col-md-4">
+                <div class="col-md-4">
+                    <%if(campground.images.length) {%>
                     <img class="img-fluid" alt="" src="<%=campground.images[0].url%>">
+                    <% }else {%>
+                    <img class="img-fluid" alt=""
+                        src="https://res.cloudinary.com/dathibx74/image/upload/v1714682840/YelpCamp/d8flx8iwby4xjp3grasa.jpg">
+                    <% } %>
                 </div>
                 <div class="col-md-8">
                     <div class="card-body">
@@ -22,3 +28,10 @@
                 </div>
         </div>
         <% }%>
+
+    <script>
+        const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
+        const campgrounds = {features:<%- JSON.stringify(campgrounds) %>}
+        </script>
+    
+    <script src="/javascripts/clusterMap.js"></script>
