@@ -20,6 +20,8 @@ const campgroundsRoutes = require('./routes/campgrounds');
 const reviewsRoutes = require('./routes/reviews');
 const usersRoutes = require('./routes/users');
 const User = require('./models/user');
+const mongoSanitize = require('express-mongo-sanitize');
+
 mongoose.connect('mongodb://localhost:27017/yelp-camp')
 
 const db =  mongoose.connection;
@@ -37,6 +39,8 @@ app.engine("ejs",ejsMate);
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
+app.use(mongoSanitize());
+
 const sessionConfig = {
     secret: 'thisshouldbeabettersecret!',
     resave: false,
@@ -58,6 +62,7 @@ passport.deserializeUser(User.deserializeUser());
 
 
 app.use((req,res,next)=>{
+    c
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
