@@ -22,7 +22,11 @@ const usersRoutes = require('./routes/users');
 const User = require('./models/user');
 const mongoSanitize = require('express-mongo-sanitize');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp')
+const MongoDBStore = require('connect-mongo')(session);
+
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
+// 
+mongoose.connect(dbUrl)
 
 const db =  mongoose.connection;
 db.on("error", console.error.bind(console,"connection error:"));
@@ -41,12 +45,27 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')));
 app.use(mongoSanitize());
 
-const sessionConfig = {
+const store = new MongoDBStore({
+    url: dbUrl,
     secret: 'thisshouldbeabettersecret!',
+    touchAfter: 24 * 60 *60
+});
+
+const secret = process.env.SECRET || 'thisshouldbeabettersecret!';
+
+store.on("error", function (e){
+    console.log('SESSION STORE ERROR', e)
+})
+
+const sessionConfig = {
+    store,
+    name:'session',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
+        // secure:true,
         expires: Date.now() + 1000 * 60 * 60 * 24 *7,
         maxAge: Date.now() + 1000 * 60 * 60 * 24 *7
     }
@@ -62,7 +81,6 @@ passport.deserializeUser(User.deserializeUser());
 
 
 app.use((req,res,next)=>{
-    c
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
